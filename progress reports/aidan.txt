@@ -1,0 +1,8 @@
+10/02/2024
+Created the repository and invited the team members
+
+10/05/2024
+Looked into OpenCV and tested it by taking picture using my laptop camera
+
+10/15/2024
+Started learning more about integrating python and android studio
