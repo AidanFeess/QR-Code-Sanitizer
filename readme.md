@@ -7,3 +7,4 @@ QR codes are easily manipulatiable, especially ones that exist in public spaces 
 - numpy
 - flask
 - flask-socketio
+- flask-cors
