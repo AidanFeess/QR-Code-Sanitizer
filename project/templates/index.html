@@ -42,7 +42,30 @@
 
     <p id="status-text">Status: Waiting for user action...</p>
 
-    <button onclick="startScan()">Start Camera</button>
+    <button onclick="startCamera()">Start Camera</button>
+
+    <script>
+        async function startCamera() {
+            const video = document.getElementById("video");
+    
+            // Check if the Android interface is available
+            if (typeof Android !== "undefined" && Android.startCamera) {
+                Android.startCamera();
+            } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                // Attempt to access the PC's camera
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    video.onloadedmetadata = () => video.play();
+                } catch (error) {
+                    alert("Unable to access the camera: " + error.message);
+                }
+            } else {
+                alert("Camera access is not supported on this device.");
+            }
+        }
+    </script>
     <button onclick="captureImage()">Capture Image</button>
 
     <video id="video" autoplay></video>
@@ -50,61 +73,26 @@
     <img id="captured-img" alt="Captured Image" />
 
     <script>
-        let videoStream = null;
-
-        async function startScan() {
-            const statusText = document.getElementById("status-text");
-            const video = document.getElementById("video");
-            const img = document.getElementById("captured-img");
-
-            // Hide the image and show the video again
-            img.style.display = 'none';
-            video.style.display = 'block';
-
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                statusText.textContent = "Camera access is not supported in this browser.";
-                return;
-            }
-
-            try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = videoStream;
-                statusText.textContent = "Camera access granted. Ready to capture.";
-            } catch (err) {
-                statusText.textContent = `Error accessing the camera: ${err.message}`;
-            }
-        }
-
         function captureImage() {
             const video = document.getElementById("video");
             const canvas = document.getElementById("canvas");
-            const statusText = document.getElementById("status-text");
 
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-
-            // Draw the current frame from the video onto the canvas
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             // Convert the canvas image to a data URL (base64 format)
             const imageData = canvas.toDataURL('image/png');
-
-            // Stop the video stream and hide the video element
-            if (videoStream) {
-                const tracks = videoStream.getTracks();
-                tracks.forEach(track => track.stop());
-                videoStream = null;
-            }
-
-            video.style.display = 'none';
-
-            // Send the image data to the Flask server
             sendImageToServer(imageData);
         }
 
         function sendImageToServer(imageData) {
             const statusText = document.getElementById("status-text");
+            const qrCodeUrlText = document.getElementById("qr-code-url-text");
+            const qrCodeAnalysisText = document.getElementById("qr-code-analysis-text");
+            const qrCodeUrl = document.getElementById("qr-code-url");
+            const qrCodeAnalysis = document.getElementById("qr-code-analysis");
 
             fetch('/upload_image', {
                 method: 'POST',
@@ -117,11 +105,15 @@
             .then(data => {
                 if (data.status === 'success') {
                     if (data.qr_code_detected) {
-                        // Green text for QR code detected
                         statusText.textContent = "QR Code Detected!";
                         statusText.className = 'status-success';
+
+                        // Display the QR code URL and analysis
+                        qrCodeUrlText.textContent = data.qr_code_url || "N/A";
+                        qrCodeAnalysisText.textContent = data.qr_code_analysis || "N/A";
+                        qrCodeUrl.style.display = 'block';
+                        qrCodeAnalysis.style.display = 'block';
                     } else {
-                        // Red text for no QR code detected
                         statusText.textContent = "No QR Code Detected!";
                         statusText.className = 'status-failure';
                     }
@@ -139,8 +131,8 @@
 
         function displayCapturedImage(imageUrl) {
             const img = document.getElementById("captured-img");
-            img.src = imageUrl;  // Set the image source to the saved image
-            img.style.display = 'block';  // Show the image
+            img.src = imageUrl;
+            img.style.display = 'block';
         }
     </script>
 
