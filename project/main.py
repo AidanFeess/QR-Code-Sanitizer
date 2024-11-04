@@ -6,7 +6,7 @@ import vt
 import requests
 from image_rec import recognize_qr_code  # Import the QR code recognition function
 
-vt_key = ''
+vt_key = '300dabb04260bfe8723b6795168368798a3e9357017709f63e14aa96ffda9630'
 
 def get_analysis(analysis_id):
     # define URL for the vt API analysis endpoint
@@ -66,7 +66,7 @@ def scan_url(url_to_scan):
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = 'project/static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
@@ -100,8 +100,8 @@ def upload_image():
         return jsonify({
             'status': 'success',
             'qr_code_detected': qr_present,
-            'qr_danger_status': f"Status: {qr_simple_data}",
-            'image_url': f'/uploads/captured_image.png'
+            'qr_danger_status': f"Status: {qr_simple_data} | URL: {qr_text}",
+            'image_url': f'static/uploads/captured_image.png'
         })
     except Exception as e:
         return jsonify({'status': 'failure', 'message': str(e)})
