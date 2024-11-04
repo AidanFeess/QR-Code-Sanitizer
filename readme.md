@@ -8,3 +8,4 @@ QR codes are easily manipulatiable, especially ones that exist in public spaces 
 - flask
 - flask-socketio
 - flask-cors
+- vt-py
