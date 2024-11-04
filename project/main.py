@@ -20,10 +20,6 @@ def get_analysis(analysis_id):
         
         # display results in readable format
         stats = analysis_data['data']['attributes']['stats']
-        print("Malicious:", stats['malicious'])
-        print("Suspicious:", stats['suspicious'])
-        print("Harmless:", stats['harmless'])
-        print("Undetected:", stats['undetected'])
 
         danger_type = "Harmless"
         if stats['malicious'] > 0:
@@ -100,6 +96,7 @@ def upload_image():
             'status': 'success',
             'qr_code_detected': qr_present,
             'qr_danger_status': f"Status: {qr_simple_data} | URL: {qr_text}",
+            'qr_advanced_data': qr_all_data,
             'image_url': f'static/uploads/captured_image.png'
         })
     except Exception as e:
