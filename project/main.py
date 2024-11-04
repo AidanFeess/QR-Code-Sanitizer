@@ -3,7 +3,7 @@ import base64
 import re
 import os
 import requests
-from image_rec import recognize_qr_code  # Import the QR code recognition function
+from image_rec import recognize_qr_code
 
 vt_key = '300dabb04260bfe8723b6795168368798a3e9357017709f63e14aa96ffda9630'
 
@@ -36,10 +36,10 @@ def get_analysis(analysis_id):
 
 def scan_url(url_to_scan):
     global vt_key
-    # Define the URL for the VirusTotal API endpoint
+    # define URL for vt API endpoint
     vt_url = "https://www.virustotal.com/api/v3/urls"
 
-    # Set up headers with the API key
+    # set up headers with API key
     headers = {
         "x-apikey": vt_key
     }
@@ -47,14 +47,12 @@ def scan_url(url_to_scan):
     data = {
         "url": url_to_scan
     }
-
-    # Send the request to scan the URL
     response = requests.post(vt_url, headers=headers, data=data)
     
-    # Check if the request was successful
+    # check if request was successful
     if response.status_code == 200:
         analysis_id = response.json()['data']['id']
-        return get_analysis(analysis_id)  # Return JSON data for the scan result
+        return get_analysis(analysis_id)  # return JSON data for scan result
     else:
         print("Error:", response.status_code)
         return None

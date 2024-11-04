@@ -237,9 +237,23 @@
       <p id="status-text">Status: Waiting for user action...</p>
       <video id="video" autoplay></video>
       <canvas id="canvas" style="display: none"></canvas>
-      <img id="captured-img" alt="Captured Image" />
-      <button onclick="startScan()">Start Camera</button>
-      <button onclick="captureImage()">Capture Image</button>
+      <div id="capture-container" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <img id="captured-img" alt="Captured Image" style="display: none;" />
+        <video id="video" autoplay style="display: block; max-width: 100%; border: 2px solid black; border-radius: 10px;"></video>
+        
+        <!-- buttons -->
+        <div style="display: flex; gap: 10px;">
+          <button onclick="startScan()">Start Camera</button>
+          <button onclick="captureImage()">Capture Image</button>
+        </div>
+        
+        <!-- advanced data button and menu -->
+        <button onclick="toggleAdvancedDataMenu()">Advanced Data &#9662;</button>
+        <div id="advanced-data-menu" style="display: none; background-color: #f9f9f9; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 5px;">
+          <p><strong>QR Advanced Data:</strong></p>
+          <div id="qr-advanced-data-content">No data available.</div>
+        </div>
+      </div>
     </section>
 
     <!-- About Section -->
@@ -300,6 +314,11 @@
     </footer>
 
     <script>
+      function toggleAdvancedDataMenu() {
+        const menu = document.getElementById("advanced-data-menu");
+        menu.style.display = menu.style.display === "none" ? "block" : "none";
+      }
+
       function sendEmail(event) {
         event.preventDefault();
 
@@ -401,13 +420,14 @@
               if (data.qr_code_detected) {
                 statusText.textContent = data.qr_danger_status;
                 statusText.className = "status-success";
+                displayAdvancedData(data.qr_advanced_data); // Display the advanced data
               } else {
                 statusText.textContent = "No QR Code Detected!";
                 statusText.className = "status-failure";
               }
               displayCapturedImage(data.image_url);
             } else {
-              statusText.textContent = "Failed to process the image.";
+              statusText.textContent = "No QR Code Detected!";
               statusText.className = "status-failure";
             }
           })
@@ -415,6 +435,15 @@
             statusText.textContent = `Error: ${error}`;
             statusText.className = "status-failure";
           });
+      }
+
+      function displayAdvancedData(advancedData) {
+        const advancedDataContent = document.getElementById("qr-advanced-data-content");
+        if (advancedData) {
+          advancedDataContent.innerHTML = `<pre>${JSON.stringify(advancedData, null, 2)}</pre>`;
+        } else {
+          advancedDataContent.textContent = "No advanced data available.";
+        }
       }
 
       function displayCapturedImage(imageUrl) {
