@@ -100,7 +100,7 @@ def upload_image():
         return jsonify({
             'status': 'success',
             'qr_code_detected': qr_present,
-            'qr_danger_status': qr_simple_data,
+            'qr_danger_status': f"Status: {qr_simple_data}",
             'image_url': f'/uploads/captured_image.png'
         })
     except Exception as e:
