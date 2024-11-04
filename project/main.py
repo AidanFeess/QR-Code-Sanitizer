@@ -1,15 +1,41 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory
-from flask_cors import CORS
 import base64
 import re
 import os
 import vt
-from image_rec import recognize_qr_code
+import requests
+from image_rec import recognize_qr_code  # Import the QR code recognition function
 
-VT_API_KEY = '' # virus total api key
+vt_key = ''
+
+def scan_url(url_to_scan):
+    global vt_key
+    # Define the URL for the VirusTotal API endpoint
+    vt_url = "https://www.virustotal.com/api/v3/urls"
+    
+    # Encode the URL to be scanned (VirusTotal requires URL-safe base64 encoding)
+    url_id = base64.urlsafe_b64encode(url_to_scan.encode()).decode().strip("=")
+
+    # Set up headers with the API key
+    headers = {
+        "x-apikey": vt_key
+    }
+
+    data = {
+        "url": url_to_scan
+    }
+
+    # Send the request to scan the URL
+    response = requests.post(vt_url, headers=headers, data=data)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        return response.json()  # Return JSON data for the scan result
+    else:
+        print("Error:", response.status_code)
+        return None
 
 app = Flask(__name__)
-CORS(app)
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -38,21 +64,12 @@ def upload_image():
             f.write(image)
 
         # Use OpenCV to check for QR code
-        qr_content = recognize_qr_code(image_path)
-        qr_present = False if not qr_content else True
-        qr_analysis = "Safe!"
-        if qr_content:
-            with vt.Client(VT_API_KEY) as client:
-                url = qr_content
-                qr_analysis = client.scan_url(url)
-        
-        os.remove(image_path)
+        qr_present, qr_text = recognize_qr_code(image_path)
+        print(scan_url(qr_text))
 
         return jsonify({
             'status': 'success',
-            'qr_code_detected': qr_present,
-            'qr_code_url': qr_content,
-            'qr_code_analysis': qr_analysis,
+            'qr_code_detected': qr_text,
             'image_url': f'/uploads/captured_image.png'
         })
     except Exception as e:
@@ -63,4 +80,4 @@ def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True)
