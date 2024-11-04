@@ -339,29 +339,27 @@
       let videoStream = null;
 
       async function startScan() {
-        const statusText = document.getElementById("status-text");
-        const video = document.getElementById("video");
-        const img = document.getElementById("captured-img");
+            const statusText = document.getElementById("status-text");
+            const video = document.getElementById("video");
+            const img = document.getElementById("captured-img");
 
-        img.style.display = "none";
-        video.style.display = "block";
+            // Hide the image and show the video again
+            img.style.display = 'none';
+            video.style.display = 'block';
 
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          statusText.textContent =
-            "Camera access is not supported in this browser.";
-          return;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                statusText.textContent = "Camera access is not supported in this browser.";
+                return;
+            }
+
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = videoStream;
+                statusText.textContent = "Camera access granted. Ready to capture.";
+            } catch (err) {
+                statusText.textContent = `Error accessing the camera: ${err.message}`;
+            }
         }
-
-        try {
-          videoStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-          });
-          video.srcObject = videoStream;
-          statusText.textContent = "Camera access granted. Ready to capture.";
-        } catch (err) {
-          statusText.textContent = `Error accessing the camera: ${err.message}`;
-        }
-      }
 
       function captureImage() {
         const video = document.getElementById("video");
