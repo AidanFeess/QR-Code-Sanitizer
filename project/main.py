@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 import base64
 import re
 import os
-import vt
 import requests
 from image_rec import recognize_qr_code  # Import the QR code recognition function
 
